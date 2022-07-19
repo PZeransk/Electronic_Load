@@ -1,8 +1,4 @@
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <splash.h>
-#include "AiEsp32RotaryEncoder.h"
+#include "menu.h"
 
 #if defined(ESP8266)
 #define ROTARY_ENCODER_A_PIN D6
