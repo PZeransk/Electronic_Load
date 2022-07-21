@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-extern int16_t prevEncoderVal[2];
+extern int16_t menu_level[6];
 
 class LABEL{
 private:
@@ -72,4 +72,40 @@ uint8_t returnLabelCount();
 void endDraw(Adafruit_SSD1306 &display);
 int8_t select(int8_t position);
 ~CCMenu();
+};
+
+class CRMenu: public Menu{
+private:
+std::vector<std::shared_ptr<LABEL>> labels_;
+uint8_t pointerPos;
+
+public:
+CRMenu();
+void beginDraw(Adafruit_SSD1306 &display);
+void drawMenu(Adafruit_SSD1306 &display);
+void createMenu();
+void addLabel(int8_t number, std::string text);
+void drawPointer(int8_t position, Adafruit_SSD1306 &display);
+uint8_t returnLabelCount();
+void endDraw(Adafruit_SSD1306 &display);
+int8_t select(int8_t position);
+~CRMenu();
+};
+
+class CPMenu: public Menu{
+private:
+std::vector<std::shared_ptr<LABEL>> labels_;
+uint8_t pointerPos;
+
+public:
+CPMenu();
+void beginDraw(Adafruit_SSD1306 &display);
+void drawMenu(Adafruit_SSD1306 &display);
+void createMenu();
+void addLabel(int8_t number, std::string text);
+void drawPointer(int8_t position, Adafruit_SSD1306 &display);
+uint8_t returnLabelCount();
+void endDraw(Adafruit_SSD1306 &display);
+int8_t select(int8_t position);
+~CPMenu();
 };
