@@ -19,13 +19,19 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 
+mainMenu main_Menu;
+
 void IRAM_ATTR readEncoderISR()
 {
     rotaryEncoder.readEncoder_ISR();
 }
 
+
+
 void setup()
 {
+
+    // prevEncoderVal[2]={0,0};
     Serial.begin(115200);
     rotaryEncoder.begin();
     rotaryEncoder.setup(readEncoderISR);
@@ -36,7 +42,7 @@ void setup()
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
   }
-  delay(2000);
+  delay(200);
   display.clearDisplay();
 
   display.setTextSize(1);
@@ -52,14 +58,17 @@ void loop()
 {
     if (rotaryEncoder.encoderChanged())
     {   
-        display.clearDisplay();
+        
         Serial.println(rotaryEncoder.readEncoder());
-        display.setCursor(0, 10);
-        display.println(rotaryEncoder.readEncoder());
-        display.display(); 
+        main_Menu.beginDraw(display);
+        main_Menu.drawMenu(display);
+        main_Menu.drawPointer(rotaryEncoder.readEncoder(),display);
+        main_Menu.endDraw(display);
+ 
     }
     if (rotaryEncoder.isEncoderButtonClicked())
     {
         Serial.println("button pressed");
     }
+
 }

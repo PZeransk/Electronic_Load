@@ -8,6 +8,10 @@ void LABEL::setText(std::string string){
 text_=string;
 }
 
+std::string LABEL::getText(){
+    return text_;
+}
+
 void LABEL::setNumber(int8_t number){
 number_=number;
 }
