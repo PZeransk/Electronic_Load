@@ -39,6 +39,25 @@ virtual ~Menu(){};
 };
 
 
+class SetMenu: public Menu{
+private:
+std::vector<std::shared_ptr<LABEL>> labels_;
+uint8_t pointerPos;
+std::string Unit_;
+public:
+SetMenu(std::string Unit);
+void beginDraw(Adafruit_SSD1306 &display);
+void drawMenu(Adafruit_SSD1306 &display);
+void createMenu();
+void addLabel(int8_t number, std::string text);
+void drawPointer(int8_t position, Adafruit_SSD1306 &display);
+uint8_t returnLabelCount();
+void endDraw(Adafruit_SSD1306 &display);
+int8_t select(int8_t position);
+~SetMenu();  
+};
+
+
 
 class CCMenu: public Menu{
 private:
@@ -62,7 +81,8 @@ class CRMenu: public Menu{
 private:
 std::vector<std::shared_ptr<LABEL>> labels_;
 uint8_t pointerPos;
-
+bool IsSubMenuSelected_;
+SetMenu subMenuR_;
 public:
 CRMenu();
 void beginDraw(Adafruit_SSD1306 &display);
@@ -95,16 +115,18 @@ int8_t select(int8_t position);
 };
 
 
+
 class mainMenu{
 private:
 std::vector<std::shared_ptr<Menu>> menus_;
 
 uint8_t pointerPos_;
-
+int8_t selected_;
 public:
 mainMenu();
 void beginDraw(Adafruit_SSD1306 &display);
 void drawMenu(Adafruit_SSD1306 &display, uint8_t selected);
+void drawSubMenu(Adafruit_SSD1306 &display);
 void createMenu();
 void getPointer(int8_t position);
 void endDraw(Adafruit_SSD1306 &display);

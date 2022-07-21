@@ -38,6 +38,7 @@ void CCMenu::createMenu(){
 
 void CCMenu::drawPointer(int8_t position, Adafruit_SSD1306 &display){
 display.drawRect(0, (position%labels_.size())*10, 10, 10, WHITE);
+
 }
 
 uint8_t CCMenu::returnLabelCount(){
@@ -48,8 +49,8 @@ void CCMenu::endDraw(Adafruit_SSD1306 &display){
 display.display();
 }
 
-int8_t CCMenu::select(int8_t position){
-return labels_[position]->getNumber();
+int8_t CCMenu::select(int8_t position){ // method argument is irrelevant and shall be removed later
+return pointerPos;
 }
 
 CCMenu::~CCMenu(){

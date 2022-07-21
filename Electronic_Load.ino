@@ -75,14 +75,9 @@ void loop()
     if (rotaryEncoder.isEncoderButtonClicked())
     {
         Serial.println("button pressed");
-     
+        main_Menu.select(0);
     }
 
         main_Menu.drawMenu(display,1);
-
-
-        
-
-
 
 }
