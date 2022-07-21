@@ -19,7 +19,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 
+int16_t menu_level[6];
+int8_t encoderTicks;
+
 mainMenu main_Menu;
+CCMenu CC_Menu;
 
 void IRAM_ATTR readEncoderISR()
 {
@@ -32,6 +36,7 @@ void setup()
 {
 
     // prevEncoderVal[2]={0,0};
+    menu_level[0]=0;
     Serial.begin(115200);
     rotaryEncoder.begin();
     rotaryEncoder.setup(readEncoderISR);
@@ -56,19 +61,28 @@ void setup()
 
 void loop()
 {
+
     if (rotaryEncoder.encoderChanged())
     {   
         
         Serial.println(rotaryEncoder.readEncoder());
-        main_Menu.beginDraw(display);
-        main_Menu.drawMenu(display);
-        main_Menu.drawPointer(rotaryEncoder.readEncoder(),display);
-        main_Menu.endDraw(display);
+        encoderTicks=rotaryEncoder.readEncoder();
+        main_Menu.getPointer(encoderTicks);
+
+        
  
     }
     if (rotaryEncoder.isEncoderButtonClicked())
     {
         Serial.println("button pressed");
+     
     }
+
+        main_Menu.drawMenu(display,1);
+
+
+        
+
+
 
 }

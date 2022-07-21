@@ -2,7 +2,7 @@
 
 
 CPMenu::CPMenu(){
-addLabel(1,"Set Current");
+addLabel(1,"Set Power");
 addLabel(2,"Set Time");
 addLabel(3,"Start");
 addLabel(4,"Back");

@@ -2,7 +2,7 @@
 
 
 CRMenu::CRMenu(){
-addLabel(1,"Set Current");
+addLabel(1,"Set Resistance");
 addLabel(2,"Set Time");
 addLabel(3,"Start");
 addLabel(4,"Back");

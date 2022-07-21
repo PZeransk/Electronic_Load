@@ -16,6 +16,10 @@ void LABEL::setNumber(int8_t number){
 number_=number;
 }
 
+int8_t LABEL::getNumber(){
+    return number_;
+}
+
 LABEL::~LABEL(){
     
 }
