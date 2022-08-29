@@ -20,10 +20,13 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 
 int16_t menu_level[6];
-int8_t encoderTicks;
+//char buff[10];
+int8_t encoderTicks=0;
+uint8_t var[5]={0,0,0,0,0};
+uint8_t pos=0;
+uint16_t set_val=0;
+bool blink = true;
 
-mainMenu main_Menu;
-CCMenu CC_Menu;
 
 void IRAM_ATTR readEncoderISR()
 {
@@ -67,17 +70,46 @@ void loop()
         
         Serial.println(rotaryEncoder.readEncoder());
         encoderTicks=rotaryEncoder.readEncoder();
-        main_Menu.getPointer(encoderTicks);
-
+        encoderTicks=encoderTicks%10;
+        var[pos%5]=encoderTicks;
         
- 
+    
     }
     if (rotaryEncoder.isEncoderButtonClicked())
     {
-        Serial.println("button pressed");
-        main_Menu.select(0);
+        Serial.println("button pressed");  
+        pos++;
+
     }
 
-        main_Menu.drawMenu(display,1);
+    if(millis()%100==0){
+        blink=!blink;
+    }
 
+
+    if(blink){
+    //display.drawLine(pos%5*10,10,pos%5*10+10,10,WHITE);
+    //display.display();
+    }else{
+    //display.display();
+    }
+
+    if(millis()%16==0){
+        char buff[10];
+        display.clearDisplay();
+        display.drawLine(pos%5*10,10,pos%5*10+10,10,WHITE);
+        snprintf(buff,6,"%d%d%d%d%d",var[0],var[1],var[2],var[3],var[4]);
+        display.setTextSize(2);
+        display.setTextColor(WHITE);
+        display.setCursor(0, 0);
+        display.println(buff); 
+        display.setCursor(0, 20);
+        set_val=0;
+        for(int i = 0; i<sizeof(var)/sizeof(uint8_t);i++){
+            set_val+=pow(10,i)*var[i];
+        }
+        display.println(set_val); 
+        display.display();
+    }
+    
 }
