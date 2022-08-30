@@ -22,10 +22,12 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, 
 int16_t menu_level[6];
 //char buff[10];
 int8_t encoderTicks=0;
-uint8_t var[5]={0,0,0,0,0};
+uint8_t var[]={0,0,0,0};
+uint8_t inv_arr[]={0,0,0,0};
 uint8_t pos=0;
-uint16_t set_val=0;
+uint32_t set_val=0;
 bool blink = true;
+bool button_hold=false;
 
 
 void IRAM_ATTR readEncoderISR()
@@ -81,6 +83,19 @@ void loop()
         pos++;
 
     }
+    if (rotaryEncoder.isEncoderButtonClicked(200))
+    {
+        Serial.println("button pressed hold");  
+        //pos++;
+        button_hold=true;
+        zeroArray(var);
+        
+    }else{
+        button_hold=false;
+    }
+
+
+
 
     if(millis()%100==0){
         blink=!blink;
@@ -97,18 +112,20 @@ void loop()
     if(millis()%16==0){
         char buff[10];
         display.clearDisplay();
-        display.drawLine(pos%5*10,10,pos%5*10+10,10,WHITE);
-        snprintf(buff,6,"%d%d%d%d%d",var[0],var[1],var[2],var[3],var[4]);
+        display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
+        snprintf(buff,6,"%d%d%d%d",var[0],var[1],var[2],var[3]);
         display.setTextSize(2);
         display.setTextColor(WHITE);
         display.setCursor(0, 0);
         display.println(buff); 
         display.setCursor(0, 20);
-        set_val=0;
-        for(int i = 0; i<sizeof(var)/sizeof(uint8_t);i++){
-            set_val+=pow(10,i)*var[i];
-        }
+
+        set_val=ChangeArrayToInt(var);
+
         display.println(set_val); 
+        display.setCursor(0, 40);
+        display.println(sizeof(var)/sizeof(uint8_t)); 
+
         display.display();
     }
     

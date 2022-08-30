@@ -7,4 +7,7 @@
 #include <string>
 #include <stdio.h>
 #include <math.h>
+#include <cstdint>
 
+uint32_t ChangeArrayToInt(uint8_t InArr[]);
+void zeroArray(uint8_t InArr[]);
