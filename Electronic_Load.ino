@@ -82,6 +82,8 @@ void loop()
             var[pos%5]=encoderTicks;          
         }else if(!is_second_menu){
             menu_select=encoderTicks%4;
+            if(menu_select==0)
+            menu_select=1;
         }
     
     }
@@ -95,6 +97,7 @@ void loop()
             pos++;
         }else if(!is_second_menu){
             //is_second_menu=true;
+            
         }
 
     }
@@ -158,12 +161,13 @@ void loop()
         }else if(is_second_menu==false){
         display.setCursor(0, 0);
         display.println(CCMenu.line1);
-        display.setCursor(10, 16);
+        display.setCursor(16, 16);
         display.println(CCMenu.line2);
-        display.setCursor(10, 32);
+        display.setCursor(16, 32);
         display.println(CCMenu.line3);
-        display.setCursor(10, 48);
+        display.setCursor(16, 48);
         display.println(CCMenu.line4);
+        display.fillRect(0,menu_select*16,15,15,WHITE);
         }
 
 
