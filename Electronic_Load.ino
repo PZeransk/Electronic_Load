@@ -29,6 +29,8 @@ uint32_t set_val=0;
 bool blink = true;
 bool button_hold=false;
 
+menu CCMenu;
+
 
 void IRAM_ATTR readEncoderISR()
 {
@@ -40,8 +42,8 @@ void IRAM_ATTR readEncoderISR()
 void setup()
 {
 
-    // prevEncoderVal[2]={0,0};
-    menu_level[0]=0;
+    initStruct(CCMenu,"line1","line2","line3","line4");
+
     Serial.begin(115200);
     rotaryEncoder.begin();
     rotaryEncoder.setup(readEncoderISR);
@@ -51,17 +53,16 @@ void setup()
       if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
-  }
-  delay(200);
-  display.clearDisplay();
+    }
+    delay(200);
+    display.clearDisplay();
 
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 10);
   // Display static text
-  display.println("Hello, world!");
-  display.display(); 
-
+    display.println("Booting");
+    display.display(); 
 }
 
 void loop()
