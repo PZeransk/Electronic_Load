@@ -25,10 +25,11 @@ int8_t encoderTicks=0;
 uint8_t var[]={0,0,0,0};
 uint8_t inv_arr[]={0,0,0,0};
 uint8_t pos=0;
+uint8_t menu_select=0;
 uint32_t set_val=0;
 bool blink = true;
 bool button_hold=false;
-
+bool is_second_menu=true;
 menu CCMenu;
 
 
@@ -42,7 +43,7 @@ void IRAM_ATTR readEncoderISR()
 void setup()
 {
 
-    initStruct(CCMenu,"line1","line2","line3","line4");
+    initStruct(&CCMenu,"  CC MODE ","Set I","Set T","Start");
 
     Serial.begin(115200);
     rotaryEncoder.begin();
@@ -73,23 +74,46 @@ void loop()
         
         Serial.println(rotaryEncoder.readEncoder());
         encoderTicks=rotaryEncoder.readEncoder();
-        encoderTicks=encoderTicks%10;
-        var[pos%5]=encoderTicks;
         
+        
+
+        if(is_second_menu){
+            encoderTicks=encoderTicks%10;
+            var[pos%5]=encoderTicks;          
+        }else if(!is_second_menu){
+            menu_select=encoderTicks%4;
+        }
     
     }
     if (rotaryEncoder.isEncoderButtonClicked())
     {
-        Serial.println("button pressed");  
-        pos++;
+        Serial.println("button pressed");
+
+        
+
+        if(is_second_menu){
+            pos++;
+        }else if(!is_second_menu){
+            //is_second_menu=true;
+        }
 
     }
-    if (rotaryEncoder.isEncoderButtonClicked(200))
+    if (rotaryEncoder.isEncoderButtonClicked(1000))
     {
         Serial.println("button pressed hold");  
         //pos++;
         button_hold=true;
-        zeroArray(var);
+        if(is_second_menu){
+            if(pos!=4)
+            zeroArray(var);
+            else
+            is_second_menu=false;
+
+        }else if(!is_second_menu){
+            //is_second_menu=false;
+
+        }
+
         
     }else{
         button_hold=false;
@@ -113,19 +137,36 @@ void loop()
     if(millis()%16==0){
         char buff[10];
         display.clearDisplay();
-        display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
-        snprintf(buff,6,"%d%d%d%d",var[0],var[1],var[2],var[3]);
         display.setTextSize(2);
         display.setTextColor(WHITE);
+        
+        if(is_second_menu){
+        display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
+
+        snprintf(buff,6,"%d%d%d%d",var[0],var[1],var[2],var[3]);
+        
+        //display.println(buff);
         display.setCursor(0, 0);
-        display.println(buff); 
+        display.println(buff);
+
         display.setCursor(0, 20);
-
         set_val=ChangeArrayToInt(var);
-
         display.println(set_val); 
         display.setCursor(0, 40);
-        display.println(sizeof(var)/sizeof(uint8_t)); 
+        display.println(sizeof(var)/sizeof(uint8_t));         
+
+        }else if(is_second_menu==false){
+        display.setCursor(0, 0);
+        display.println(CCMenu.line1);
+        display.setCursor(10, 16);
+        display.println(CCMenu.line2);
+        display.setCursor(10, 32);
+        display.println(CCMenu.line3);
+        display.setCursor(10, 48);
+        display.println(CCMenu.line4);
+        }
+
+
 
         display.display();
     }

@@ -25,6 +25,5 @@ void initStruct(menu *toInit, char line1[], char line2[], char line3[], char lin
     strcpy(toInit->line2, line2);
     strcpy(toInit->line3, line3);
     strcpy(toInit->line4, line4);
-
-
 }
+

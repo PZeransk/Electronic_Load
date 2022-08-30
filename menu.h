@@ -13,10 +13,10 @@ typedef struct{
     uint32_t set_val1;
     uint32_t set_val2;
     uint8_t var[];
-    char line1[10];
-    char line2[10];
-    char line3[10];
-    char line4[10];
+    char line1[20];
+    char line2[20];
+    char line3[20];
+    char line4[20];
 }menu;
 
 
