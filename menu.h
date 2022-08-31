@@ -23,4 +23,4 @@ typedef struct{
 uint32_t ChangeArrayToInt(uint8_t InArr[]);
 void zeroArray(uint8_t InArr[]);
 void initStruct(menu *toInit, char line1[], char line2[], char line3[], char line4[]);
-
+void setCurrentMenu(menu *CurrMenu, menu *MenuToSet);

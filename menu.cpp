@@ -27,3 +27,11 @@ void initStruct(menu *toInit, char line1[], char line2[], char line3[], char lin
     strcpy(toInit->line4, line4);
 }
 
+void setCurrentMenu(menu *CurrMenu, menu *MenuToSet){
+    CurrMenu->set_val1=MenuToSet->set_val1;
+    CurrMenu->set_val2=MenuToSet->set_val2;
+    strcpy(CurrMenu->line1, MenuToSet->line1);
+    strcpy(CurrMenu->line2, MenuToSet->line2);
+    strcpy(CurrMenu->line3, MenuToSet->line3);
+    strcpy(CurrMenu->line4, MenuToSet->line4);
+}

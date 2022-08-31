@@ -21,16 +21,19 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, 
 
 
 int8_t encoderTicks=0;
-uint8_t var[]={0,0,0,0};
+uint8_t var1[]={0,0,0,0};
+uint8_t var2[]={0,0,0,0};
 uint8_t inv_arr[]={0,0,0,0};
 uint8_t pos=0;
 uint8_t menu_select=0;
 uint32_t set_val=0;
 char unit[5];
 bool blink = true;
-bool button_hold=false;
-bool is_second_menu=true;
+bool button_hold = false;
+bool is_second_menu = true;
+bool is_second_var = false;
 menu CCMenu;
+menu CurrentMenu;
 
 
 void IRAM_ATTR readEncoderISR()
@@ -44,7 +47,7 @@ void setup()
 {
 
     initStruct(&CCMenu,"  CC MODE ","Set I","Set T","Start");
-
+    setCurrentMenu(&CurrentMenu, &CCMenu);
     Serial.begin(115200);
     rotaryEncoder.begin();
     rotaryEncoder.setup(readEncoderISR);
@@ -68,6 +71,9 @@ void setup()
 
 void loop()
 {
+    /*
+    Menu selction via buttons
+    */
 
     if (rotaryEncoder.encoderChanged()){   
         
@@ -76,10 +82,13 @@ void loop()
 
         if(is_second_menu == true){
             encoderTicks=encoderTicks%10;
-            var[pos%5]=encoderTicks;          
+            if(!is_second_var)
+            var1[pos%5]=encoderTicks;   
+            else if(is_second_var)      
+            var2[pos%5]=encoderTicks; 
+
         }else if(is_second_menu == false){
             menu_select=encoderTicks%3;
-
         }
     
     }
@@ -93,23 +102,25 @@ void loop()
             switch (menu_select)
             {
             case 0:
-                if(strcmp(CCMenu.line2,"Set I") == 0){
+                is_second_var=false;
+                if(strcmp(CurrentMenu.line2,"Set I") == 0){
                     snprintf(unit,5,"mA");
-                }else if(strcmp(CCMenu.line2,"Set P") == 0){
+                }else if(strcmp(CurrentMenu.line2,"Set P") == 0){
                     snprintf(unit,5,"W");
                 }
                 is_second_menu=true;
                 break;
             case 1:
-                if(strcmp(CCMenu.line3,"Set T") == 0){
+                is_second_var=true;
+                if(strcmp(CurrentMenu.line3,"Set T") == 0){
                     snprintf(unit,5,"min");
-                }else if(strcmp(CCMenu.line3,"Set V") == 0){
+                }else if(strcmp(CurrentMenu.line3,"Set V") == 0){
                     snprintf(unit,5,"V");
                 }
                 is_second_menu=true;
                 break;
             case 2:
-                
+                is_second_var=false;
                 break;
             
             default:
@@ -125,7 +136,7 @@ void loop()
         button_hold=true;
         if(is_second_menu == true){
             if(pos%5!=4)
-            zeroArray(var);
+            zeroArray(var1);
             else
             is_second_menu=false;
 
@@ -150,9 +161,9 @@ void loop()
         display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
 
         if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
-        snprintf(buff,10,"%d%d.%d%d %s",var[0],var[1],var[2],var[3],unit);
+        snprintf(buff,10,"%d%d.%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
         else
-        snprintf(buff,10,"%d%d%d%d %s",var[0],var[1],var[2],var[3],unit);
+        snprintf(buff,10,"%d%d%d%d %s",var2[0],var2[1],var2[2],var2[3],unit);
 
         //display.println(buff);
         display.setCursor(0, 0);
@@ -162,21 +173,27 @@ void loop()
         //display.println(unit);
 
         display.setCursor(0, 20);
-        set_val=ChangeArrayToInt(var);
+        if(!is_second_var){
+        set_val=ChangeArrayToInt(var1);
         display.println(set_val); 
+        }else if(is_second_var){
+        set_val=ChangeArrayToInt(var2);
+        display.println(set_val);    
+        }
+
         display.setCursor(0, 40);
-        display.println(sizeof(var)/sizeof(uint8_t));         
+        display.println(sizeof(var1)/sizeof(uint8_t));         
 
 
         }else if(is_second_menu==false){
         display.setCursor(0, 0);
-        display.println(CCMenu.line1);
+        display.println(CurrentMenu.line1);
         display.setCursor(16, 16);
-        display.println(CCMenu.line2);
+        display.println(CurrentMenu.line2);
         display.setCursor(16, 32);
-        display.println(CCMenu.line3);
+        display.println(CurrentMenu.line3);
         display.setCursor(16, 48);
-        display.println(CCMenu.line4);
+        display.println(CurrentMenu.line4);
         display.fillRect(0,menu_select*16+16,15,15,WHITE);
         }
 
