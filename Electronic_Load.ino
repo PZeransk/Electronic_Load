@@ -19,14 +19,14 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 
-int16_t menu_level[6];
-//char buff[10];
+
 int8_t encoderTicks=0;
 uint8_t var[]={0,0,0,0};
 uint8_t inv_arr[]={0,0,0,0};
 uint8_t pos=0;
 uint8_t menu_select=0;
 uint32_t set_val=0;
+char unit[5];
 bool blink = true;
 bool button_hold=false;
 bool is_second_menu=true;
@@ -69,44 +69,61 @@ void setup()
 void loop()
 {
 
-    if (rotaryEncoder.encoderChanged())
-    {   
+    if (rotaryEncoder.encoderChanged()){   
         
         Serial.println(rotaryEncoder.readEncoder());
         encoderTicks=rotaryEncoder.readEncoder();
-        
-        
 
-        if(is_second_menu){
+        if(is_second_menu == true){
             encoderTicks=encoderTicks%10;
             var[pos%5]=encoderTicks;          
-        }else if(!is_second_menu){
-            menu_select=encoderTicks%4;
-            if(menu_select==0)
-            menu_select=1;
+        }else if(is_second_menu == false){
+            menu_select=encoderTicks%3;
+
         }
     
     }
-    if (rotaryEncoder.isEncoderButtonClicked())
-    {
+    if (rotaryEncoder.isEncoderButtonClicked()){
         Serial.println("button pressed");
 
-        
-
-        if(is_second_menu){
+        if(is_second_menu == true){
             pos++;
-        }else if(!is_second_menu){
-            //is_second_menu=true;
+        }else if(is_second_menu == false){
+            
+            switch (menu_select)
+            {
+            case 0:
+                if(strcmp(CCMenu.line2,"Set I") == 0){
+                    snprintf(unit,5,"mA");
+                }else if(strcmp(CCMenu.line2,"Set P") == 0){
+                    snprintf(unit,5,"W");
+                }
+                is_second_menu=true;
+                break;
+            case 1:
+                if(strcmp(CCMenu.line3,"Set T") == 0){
+                    snprintf(unit,5,"min");
+                }else if(strcmp(CCMenu.line3,"Set V") == 0){
+                    snprintf(unit,5,"V");
+                }
+                is_second_menu=true;
+                break;
+            case 2:
+                
+                break;
+            
+            default:
+                break;
+            }
             
         }
 
     }
-    if (rotaryEncoder.isEncoderButtonClicked(1000))
-    {
+    if (rotaryEncoder.isEncoderButtonClicked(1000)){
         Serial.println("button pressed hold");  
         //pos++;
         button_hold=true;
-        if(is_second_menu){
+        if(is_second_menu == true){
             if(pos!=4)
             zeroArray(var);
             else
@@ -123,20 +140,6 @@ void loop()
     }
 
 
-
-
-    if(millis()%100==0){
-        blink=!blink;
-    }
-
-
-    if(blink){
-    //display.drawLine(pos%5*10,10,pos%5*10+10,10,WHITE);
-    //display.display();
-    }else{
-    //display.display();
-    }
-
     if(millis()%16==0){
         char buff[10];
         display.clearDisplay();
@@ -146,11 +149,17 @@ void loop()
         if(is_second_menu){
         display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
 
-        snprintf(buff,6,"%d%d%d%d",var[0],var[1],var[2],var[3]);
-        
+        if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
+        snprintf(buff,10,"%d%d.%d%d %s",var[0],var[1],var[2],var[3],unit);
+        else
+        snprintf(buff,10,"%d%d%d%d %s",var[0],var[1],var[2],var[3],unit);
+
         //display.println(buff);
         display.setCursor(0, 0);
         display.println(buff);
+
+        //display.setCursor(64, 0);
+        //display.println(unit);
 
         display.setCursor(0, 20);
         set_val=ChangeArrayToInt(var);
@@ -167,10 +176,8 @@ void loop()
         display.println(CCMenu.line3);
         display.setCursor(16, 48);
         display.println(CCMenu.line4);
-        display.fillRect(0,menu_select*16,15,15,WHITE);
+        display.fillRect(0,menu_select*16+16,15,15,WHITE);
         }
-
-
 
         display.display();
     }
