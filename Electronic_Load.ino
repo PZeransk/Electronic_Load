@@ -124,7 +124,7 @@ void loop()
         //pos++;
         button_hold=true;
         if(is_second_menu == true){
-            if(pos!=4)
+            if(pos%5!=4)
             zeroArray(var);
             else
             is_second_menu=false;
@@ -166,6 +166,7 @@ void loop()
         display.println(set_val); 
         display.setCursor(0, 40);
         display.println(sizeof(var)/sizeof(uint8_t));         
+
 
         }else if(is_second_menu==false){
         display.setCursor(0, 0);
