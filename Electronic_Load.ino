@@ -1,5 +1,12 @@
 #include "menu.h"
 
+#define CC_Button 16
+#define CP_Button 4
+#define BAT_Button 0
+#define IS_CC_ON 0
+#define IS_CP_ON 1
+#define IS_BAT_ON 2
+
 #if defined(ESP8266)
 #define ROTARY_ENCODER_A_PIN D6
 #define ROTARY_ENCODER_B_PIN D5
@@ -23,17 +30,21 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, 
 int8_t encoderTicks=0;
 uint8_t var1[]={0,0,0,0};
 uint8_t var2[]={0,0,0,0};
-uint8_t CC_Button=16;
-uint8_t CP_Button=4;
-uint8_t BAT_Button=0;
 uint8_t pos=0;
 uint8_t menu_select=0;
+uint8_t selected_menu=0;
+uint16_t readCurrent = 0;
+uint16_t readVoltage = 0;
+uint16_t readPower = 0;
+uint32_t read_mAh = 0;
 uint32_t set_val=0;
-char unit[5];
+char unit[5];       //for changing decimal point on display
+char disp_buff[20];
 bool blink = true;
 bool button_hold = false;
 bool is_second_menu = false;
 bool is_second_var = false;
+bool display_stats = false;
 
 menu CCMenu;
 menu CPMenu;
@@ -54,9 +65,9 @@ void setup()
     pinMode(CP_Button,INPUT_PULLUP);
     pinMode(BAT_Button,INPUT_PULLUP);
 
-    initStruct(&CCMenu,"  CC MODE ","Set I","Set T","Start");
-    initStruct(&CPMenu,"  CP MODE ","Set P","Set T","Start");
-    initStruct(&BATMenu," BAT MODE ","Set I","Set V","Start");
+    initStruct(&CCMenu, 0,"  CC MODE ","Set I","Set T","Start");
+    initStruct(&CPMenu, 1,"  CP MODE ","Set P","Set T","Start");
+    initStruct(&BATMenu, 2," BAT MODE ","Set I","Set V","Start");
 
     setCurrentMenu(&CurrentMenu, &CCMenu);
     Serial.begin(115200);
@@ -108,10 +119,13 @@ void loop()
 
         if(is_second_menu == true){
             encoderTicks=encoderTicks%10;
-            if(!is_second_var)
-            var1[pos%5]=encoderTicks;   
-            else if(is_second_var)      
-            var2[pos%5]=encoderTicks; 
+            if(!is_second_var){
+                var1[pos%5]=encoderTicks;  
+                CurrentMenu.set_val1=ChangeArrayToInt(var1);
+            }else if(is_second_var){      
+                var2[pos%5]=encoderTicks; 
+                CurrentMenu.set_val2=ChangeArrayToInt(var2);
+            }
 
         }else if(is_second_menu == false){
             menu_select=encoderTicks%3;
@@ -147,21 +161,21 @@ void loop()
                 break;
             case 2:
                 is_second_var=false;
+                display_stats = true;
                 // Do smth to adjust parameters on a analog part
+
                 break;
             
             default:
                 break;
-            }
-            
+            }           
         }
-
     }
-    if (rotaryEncoder.isEncoderButtonClicked(1000)){
+    if (rotaryEncoder.isEncoderButtonClicked(3000)){
         Serial.println("button pressed hold");  
         //pos++;
         button_hold=true;
-        if(is_second_menu == true){
+        if(is_second_menu){
             if(pos%5!=4){
 
             if(!is_second_var)
@@ -178,19 +192,19 @@ void loop()
 
         }
 
-        
-    }else{
-        button_hold=false;
+        if(display_stats){
+            display_stats=false;
+        }        
     }
 
-
     if(millis()%16==0){
+
         char buff[10];
         display.clearDisplay();
         display.setTextSize(2);
         display.setTextColor(WHITE);
         
-        if(is_second_menu){
+        if(is_second_menu && !display_stats){
         //display.drawLine(pos%5*1+pos%5*11,14,pos%5*1+pos%5*11+10,14,WHITE);
         if(pos%5!=4){
             display.fillRect(pos%5*1+pos%5*11,15,10,2,WHITE);
@@ -198,10 +212,6 @@ void loop()
             display.fillRect(42,39,44,2,WHITE);
         }
 
-        //display.setCursor(64, 0);
-        //display.println(unit);
-
-        
         if(!is_second_var){
 
         if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
@@ -209,13 +219,9 @@ void loop()
         else
             snprintf(buff,10,"%d%d%d%d%s",var1[0],var1[1],var1[2],var1[3],unit);
 
-        //display.println(buff);
         display.setCursor(0, 0);
         display.println(buff);
-        //display.setCursor(0, 20);
-        //CurrentMenu.set_val1=ChangeArrayToInt(var1);
-        //display.println(CurrentMenu.set_val1); 
-        
+
         }else if(is_second_var){
 
         if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
@@ -223,21 +229,16 @@ void loop()
         else
             snprintf(buff,10,"%d%d%d%d %s",var2[0],var2[1],var2[2],var2[3],unit);
 
-        //display.println(buff);
         display.setCursor(0, 0);
         display.println(buff);
-        //display.setCursor(0, 20);
-
-        //CurrentMenu.set_val2=ChangeArrayToInt(var2);
-        //display.println(CurrentMenu.set_val2);    
+   
         }
         display.setCursor(42, 20);
         display.println("BACK");
         display.setCursor(0, 40);
         display.println(sizeof(var1)/sizeof(uint8_t));         
 
-
-        }else if(is_second_menu==false){
+        }else if(!is_second_menu && !display_stats){
         display.setCursor(0, 0);
         display.println(CurrentMenu.line1);
         display.setCursor(16, 16);
@@ -247,9 +248,31 @@ void loop()
         display.setCursor(16, 48);
         display.println(CurrentMenu.line4);
         display.fillRect(0,menu_select*16+16,15,15,WHITE);
+        }else if(display_stats){
+            switch (CurrentMenu.id)
+            {
+            case IS_CC_ON:
+                display.setTextSize(1);
+                display.setCursor(0, 0);
+                snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"mA",CurrentMenu.set_val2,"min");
+                display.println(disp_buff);
+                break;
+            case IS_CP_ON:
+                display.setTextSize(1);
+                display.setCursor(0, 0);
+                snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"W",CurrentMenu.set_val2,"min");
+                display.println(disp_buff);
+                break;
+            case IS_BAT_ON:
+                display.setTextSize(1);
+                display.setCursor(0, 0);
+                snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"mA",CurrentMenu.set_val2,"V");
+                display.println(disp_buff);
+                break;
+            default:
+                break;
+            }   
         }
-
         display.display();
-    }
-    
+    }   
 }

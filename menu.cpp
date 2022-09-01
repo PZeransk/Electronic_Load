@@ -18,9 +18,10 @@ void zeroArray(uint8_t InArr[]){
     
 }
 
-void initStruct(menu *toInit, char line1[], char line2[], char line3[], char line4[]){
+void initStruct(menu *toInit, uint8_t id, char line1[], char line2[], char line3[], char line4[]){
     toInit->set_val1=0;
     toInit->set_val2=0;
+    toInit->id=id;
     strcpy(toInit->line1, line1);
     strcpy(toInit->line2, line2);
     strcpy(toInit->line3, line3);
@@ -30,6 +31,7 @@ void initStruct(menu *toInit, char line1[], char line2[], char line3[], char lin
 void setCurrentMenu(menu *CurrMenu, menu *MenuToSet){
     CurrMenu->set_val1=MenuToSet->set_val1;
     CurrMenu->set_val2=MenuToSet->set_val2;
+    CurrMenu->id = MenuToSet -> id;
     strcpy(CurrMenu->line1, MenuToSet->line1);
     strcpy(CurrMenu->line2, MenuToSet->line2);
     strcpy(CurrMenu->line3, MenuToSet->line3);
