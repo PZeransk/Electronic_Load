@@ -32,7 +32,7 @@ uint32_t set_val=0;
 char unit[5];
 bool blink = true;
 bool button_hold = false;
-bool is_second_menu = true;
+bool is_second_menu = false;
 bool is_second_var = false;
 
 menu CCMenu;
@@ -85,10 +85,19 @@ void loop()
 
     if(digitalRead(CC_Button)==0 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==1){
         setCurrentMenu(&CurrentMenu, &CCMenu);
+        is_second_menu=false;
+        zeroArray(var1);
+        zeroArray(var2);
     }else if(digitalRead(CC_Button)==1 && digitalRead(CP_Button)==0 && digitalRead(BAT_Button)==1){
         setCurrentMenu(&CurrentMenu, &CPMenu);
+        is_second_menu=false;
+        zeroArray(var1);
+        zeroArray(var2);
     }else if(digitalRead(CC_Button)==1 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==0){
         setCurrentMenu(&CurrentMenu, &BATMenu);
+        is_second_menu=false;
+        zeroArray(var1);
+        zeroArray(var2);
     }
     
 
@@ -196,9 +205,9 @@ void loop()
         if(!is_second_var){
 
         if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
-            snprintf(buff,10,"%d%d.%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
+            snprintf(buff,10,"%d%d.%d%d%s",var1[0],var1[1],var1[2],var1[3],unit);
         else
-            snprintf(buff,10,"%d%d%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
+            snprintf(buff,10,"%d%d%d%d%s",var1[0],var1[1],var1[2],var1[3],unit);
 
         //display.println(buff);
         display.setCursor(0, 0);
