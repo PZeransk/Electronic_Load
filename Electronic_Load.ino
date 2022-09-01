@@ -23,7 +23,9 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, 
 int8_t encoderTicks=0;
 uint8_t var1[]={0,0,0,0};
 uint8_t var2[]={0,0,0,0};
-uint8_t inv_arr[]={0,0,0,0};
+uint8_t CC_Button=16;
+uint8_t CP_Button=4;
+uint8_t BAT_Button=0;
 uint8_t pos=0;
 uint8_t menu_select=0;
 uint32_t set_val=0;
@@ -32,7 +34,10 @@ bool blink = true;
 bool button_hold = false;
 bool is_second_menu = true;
 bool is_second_var = false;
+
 menu CCMenu;
+menu CPMenu;
+menu BATMenu;
 menu CurrentMenu;
 
 
@@ -45,8 +50,14 @@ void IRAM_ATTR readEncoderISR()
 
 void setup()
 {
+    pinMode(CC_Button,INPUT_PULLUP);
+    pinMode(CP_Button,INPUT_PULLUP);
+    pinMode(BAT_Button,INPUT_PULLUP);
 
     initStruct(&CCMenu,"  CC MODE ","Set I","Set T","Start");
+    initStruct(&CPMenu,"  CP MODE ","Set P","Set T","Start");
+    initStruct(&BATMenu," BAT MODE ","Set I","Set V","Start");
+
     setCurrentMenu(&CurrentMenu, &CCMenu);
     Serial.begin(115200);
     rotaryEncoder.begin();
@@ -71,9 +82,15 @@ void setup()
 
 void loop()
 {
-    /*
-    Menu selction via buttons
-    */
+
+    if(digitalRead(CC_Button)==0 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==1){
+        setCurrentMenu(&CurrentMenu, &CCMenu);
+    }else if(digitalRead(CC_Button)==1 && digitalRead(CP_Button)==0 && digitalRead(BAT_Button)==1){
+        setCurrentMenu(&CurrentMenu, &CPMenu);
+    }else if(digitalRead(CC_Button)==1 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==0){
+        setCurrentMenu(&CurrentMenu, &BATMenu);
+    }
+    
 
     if (rotaryEncoder.encoderChanged()){   
         
@@ -121,6 +138,7 @@ void loop()
                 break;
             case 2:
                 is_second_var=false;
+                // Do smth to adjust parameters on a analog part
                 break;
             
             default:
@@ -135,10 +153,16 @@ void loop()
         //pos++;
         button_hold=true;
         if(is_second_menu == true){
-            if(pos%5!=4)
+            if(pos%5!=4){
+
+            if(!is_second_var)
             zeroArray(var1);
-            else
+            else if(is_second_var)
+            zeroArray(var2);
+
+            }else{
             is_second_menu=false;
+            }
 
         }else if(!is_second_menu){
             //is_second_menu=false;
@@ -158,29 +182,48 @@ void loop()
         display.setTextColor(WHITE);
         
         if(is_second_menu){
-        display.drawLine(pos%5*10,16,pos%5*10+10,16,WHITE);
-
-        if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
-        snprintf(buff,10,"%d%d.%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
-        else
-        snprintf(buff,10,"%d%d%d%d %s",var2[0],var2[1],var2[2],var2[3],unit);
-
-        //display.println(buff);
-        display.setCursor(0, 0);
-        display.println(buff);
+        //display.drawLine(pos%5*1+pos%5*11,14,pos%5*1+pos%5*11+10,14,WHITE);
+        if(pos%5!=4){
+            display.fillRect(pos%5*1+pos%5*11,15,10,2,WHITE);
+        } else if(pos%5==4){
+            display.fillRect(42,39,44,2,WHITE);
+        }
 
         //display.setCursor(64, 0);
         //display.println(unit);
 
-        display.setCursor(0, 20);
+        
         if(!is_second_var){
-        set_val=ChangeArrayToInt(var1);
-        display.println(set_val); 
-        }else if(is_second_var){
-        set_val=ChangeArrayToInt(var2);
-        display.println(set_val);    
-        }
 
+        if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
+            snprintf(buff,10,"%d%d.%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
+        else
+            snprintf(buff,10,"%d%d%d%d %s",var1[0],var1[1],var1[2],var1[3],unit);
+
+        //display.println(buff);
+        display.setCursor(0, 0);
+        display.println(buff);
+        //display.setCursor(0, 20);
+        //CurrentMenu.set_val1=ChangeArrayToInt(var1);
+        //display.println(CurrentMenu.set_val1); 
+        
+        }else if(is_second_var){
+
+        if(strcmp(unit,"V") == 0 || strcmp(unit,"W") == 0)
+            snprintf(buff,10,"%d%d.%d%d %s",var2[0],var2[1],var2[2],var2[3],unit);
+        else
+            snprintf(buff,10,"%d%d%d%d %s",var2[0],var2[1],var2[2],var2[3],unit);
+
+        //display.println(buff);
+        display.setCursor(0, 0);
+        display.println(buff);
+        //display.setCursor(0, 20);
+
+        //CurrentMenu.set_val2=ChangeArrayToInt(var2);
+        //display.println(CurrentMenu.set_val2);    
+        }
+        display.setCursor(42, 20);
+        display.println("BACK");
         display.setCursor(0, 40);
         display.println(sizeof(var1)/sizeof(uint8_t));         
 
