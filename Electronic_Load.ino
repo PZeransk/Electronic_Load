@@ -260,13 +260,13 @@ void loop()
             case IS_CP_ON:
                 display.setTextSize(1);
                 display.setCursor(0, 0);
-                snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"W",CurrentMenu.set_val2,"min");
+                snprintf(disp_buff,20,"%s%.2f%s %d%s","Set:",(float)(CurrentMenu.set_val1)/100,"W",CurrentMenu.set_val2,"min");
                 display.println(disp_buff);
                 break;
             case IS_BAT_ON:
                 display.setTextSize(1);
                 display.setCursor(0, 0);
-                snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"mA",CurrentMenu.set_val2,"V");
+                snprintf(disp_buff,20,"%s%d%s %.2f%s","Set:",CurrentMenu.set_val1,"mA",(float)(CurrentMenu.set_val2)/100,"V");
                 display.println(disp_buff);
                 break;
             default:
