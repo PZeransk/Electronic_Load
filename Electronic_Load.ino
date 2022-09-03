@@ -1,30 +1,15 @@
 #include "menu.h"
 
-#define CC_Button 16
-#define CP_Button 4
-#define BAT_Button 0
-#define IS_CC_ON 0
-#define IS_CP_ON 1
-#define IS_BAT_ON 2
-
-#if defined(ESP8266)
-#define ROTARY_ENCODER_A_PIN D6
-#define ROTARY_ENCODER_B_PIN D5
-#define ROTARY_ENCODER_BUTTON_PIN D7
-#else
-#define ROTARY_ENCODER_A_PIN 32
-#define ROTARY_ENCODER_B_PIN 5
-#define ROTARY_ENCODER_BUTTON_PIN 25
-#endif
-#define ROTARY_ENCODER_STEPS 4
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64 
 
 
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+menu CCMenu;
+menu CPMenu;
+menu BATMenu;
+menu CurrentMenu;
 
 
 int8_t encoderTicks=0;
@@ -46,24 +31,22 @@ bool is_second_menu = false;
 bool is_second_var = false;
 bool display_stats = false;
 
-menu CCMenu;
-menu CPMenu;
-menu BATMenu;
-menu CurrentMenu;
-
+const uint16_t PWM_MAX_DUTY_CYCLE = (uint16_t)(pow(2,PWM_bit_Res)-1);
 
 void IRAM_ATTR readEncoderISR()
 {
     rotaryEncoder.readEncoder_ISR();
 }
 
-
+ 
 
 void setup()
 {
     pinMode(CC_Button,INPUT_PULLUP);
     pinMode(CP_Button,INPUT_PULLUP);
     pinMode(BAT_Button,INPUT_PULLUP);
+    ledcSetup(PWM_Channel, PWM_Freq, PWM_bit_Res);
+    ledcAttachPin(LP_PWM_PIN, PWM_Channel);
 
     initStruct(&CCMenu, 0,"  CC MODE ","Set I","Set T","Start");
     initStruct(&CPMenu, 1,"  CP MODE ","Set P","Set T","Start");
@@ -256,6 +239,7 @@ void loop()
                 display.setCursor(0, 0);
                 snprintf(disp_buff,20,"%s%d%s %d%s","Set:",CurrentMenu.set_val1,"mA",CurrentMenu.set_val2,"min");
                 display.println(disp_buff);
+                ledcWrite(PWM_Channel,CurrentMenu.set_val1*PWM_MAX_DUTY_CYCLE/10000);
                 break;
             case IS_CP_ON:
                 display.setTextSize(1);
@@ -267,6 +251,7 @@ void loop()
                 display.setTextSize(1);
                 display.setCursor(0, 0);
                 snprintf(disp_buff,20,"%s%d%s %.2f%s","Set:",CurrentMenu.set_val1,"mA",(float)(CurrentMenu.set_val2)/100,"V");
+                ledcWrite(PWM_Channel,CurrentMenu.set_val1*PWM_MAX_DUTY_CYCLE/10000);
                 display.println(disp_buff);
                 break;
             default:
