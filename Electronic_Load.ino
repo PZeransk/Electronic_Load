@@ -10,7 +10,7 @@ menu CCMenu;
 menu CPMenu;
 menu BATMenu;
 menu CurrentMenu;
-
+DAC_DATA data;
 
 int8_t encoderTicks=0;
 uint8_t var1[]={0,0,0,0};
@@ -21,6 +21,7 @@ uint8_t selected_menu=0;
 uint16_t readCurrent = 0;
 uint16_t readVoltage = 0;
 uint16_t readPower = 0;
+uint16_t setVoltage = 0;
 uint32_t read_mAh = 0;
 uint32_t set_val=0;
 char unit[5];       //for changing decimal point on display
@@ -47,6 +48,8 @@ void setup()
     vspi = new SPIClass(VSPI);
     vspi -> begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_SS);
     pinMode(VSPI_SS, OUTPUT);
+    data.setup_data = 0x0;
+    data.v_out_val = 0x0;
     //
     pinMode(CC_Button, INPUT_PULLUP);
     pinMode(CP_Button, INPUT_PULLUP);
@@ -86,8 +89,13 @@ void loop()
 
     //SPI TEST
     if(millis()%100){
-        
-        sendData(vspi, 0x7123);
+        data.setup_data = MCP4921_WRITE_BUFFERED;
+        if(data.v_out_val<4095)
+        data.v_out_val++;
+        else
+        data.v_out_val = 0;
+
+        sendData(vspi, prepareData(&data));
     }
 
     if(digitalRead(CC_Button)==0 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==1){

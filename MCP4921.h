@@ -16,7 +16,7 @@
 
 static const int spiClk = 1000000; // 1 MHz
 
-struct DAC_DATA
+typedef struct
 {
     uint16_t setup_data;
     uint16_t v_out_val;
@@ -24,12 +24,21 @@ struct DAC_DATA
 
 enum setup{
     //All data will be send with 1x gain
-    MCP4921_WRITE_BUFFERED   = 0x7;
-    MCP4921_WRITE_UNBUFFERED = 0x3;
-    MCP4921_STOP             = 0x2;
-}
-
+    MCP4921_WRITE_BUFFERED = 0x7000,
+    MCP4921_WRITE_UNBUFFERED = 0x3000,
+    MCP4921_STOP = 0x2000
+};
+/*
 uint16_t prepareData(DAC_DATA *data_struct);
+void sendData(SPIClass *spi, uint16_t data);
+*/
+
+
+
+uint16_t prepareData(DAC_DATA *data_struct){
+    uint16_t temp = data_struct->setup_data + data_struct->v_out_val;
+    return temp;
+}
 
 void sendData(SPIClass *spi, uint16_t data){
   spi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
@@ -38,5 +47,3 @@ void sendData(SPIClass *spi, uint16_t data){
   digitalWrite(VSPI_SS, HIGH); //pull ss high to signify end of data transfer
   spi->endTransaction();
 }
-
-
