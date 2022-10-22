@@ -1,5 +1,5 @@
 #include "menu.h"
-
+#include "MCP4921.h"
 
 
 
@@ -38,13 +38,19 @@ void IRAM_ATTR readEncoderISR()
     rotaryEncoder.readEncoder_ISR();
 }
 
- 
+ //uninitalised pointers to SPI objects
+SPIClass * vspi = NULL;
 
 void setup()
 {
-    pinMode(CC_Button,INPUT_PULLUP);
-    pinMode(CP_Button,INPUT_PULLUP);
-    pinMode(BAT_Button,INPUT_PULLUP);
+    //SPI INIT
+    vspi = new SPIClass(VSPI);
+    vspi -> begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_SS);
+    pinMode(VSPI_SS, OUTPUT);
+    //
+    pinMode(CC_Button, INPUT_PULLUP);
+    pinMode(CP_Button, INPUT_PULLUP);
+    pinMode(BAT_Button, INPUT_PULLUP);
     ledcSetup(PWM_Channel, PWM_Freq, PWM_bit_Res);
     ledcAttachPin(LP_PWM_PIN, PWM_Channel);
 
@@ -76,6 +82,13 @@ void setup()
 
 void loop()
 {
+
+
+    //SPI TEST
+    if(millis()%100){
+        
+        sendData(vspi, 0x7123);
+    }
 
     if(digitalRead(CC_Button)==0 && digitalRead(CP_Button)==1 && digitalRead(BAT_Button)==1){
         setCurrentMenu(&CurrentMenu, &CCMenu);
@@ -222,6 +235,7 @@ void loop()
         display.println(sizeof(var1)/sizeof(uint8_t));         
 
         }else if(!is_second_menu && !display_stats){
+        ledcWrite(PWM_Channel,0);
         display.setCursor(0, 0);
         display.println(CurrentMenu.line1);
         display.setCursor(16, 16);
