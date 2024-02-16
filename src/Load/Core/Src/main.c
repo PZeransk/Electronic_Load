@@ -28,11 +28,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ssd1306.h"
-#include "ssd1306_conf_template.h"
-#include "ssd1306_fonts.h"
-#include "ssd1306_tests.h"
-
+#include "menu.h"
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,6 +61,18 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// define menus
+menu CCMenu;
+menu CVMenu;
+menu CPMenu;
+menu CRMenu;
+
+
+menu menuArray[4]; // there are 4 menus
+
+uint8_t toggles = 0;
+uint8_t modToggles = 0;
+bool wasToggled = false;
 /* USER CODE END 0 */
 
 /**
@@ -100,10 +109,29 @@ int main(void)
   MX_DMA_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-ssd1306_Init();
-ssd1306_SetCursor(10, 10);
-ssd1306_WriteString("PIWO", Font_7x10, White);
-ssd1306_UpdateScreen();
+  ssd1306_Init();
+  ssd1306_SetCursor(8, 10);
+  ssd1306_WriteString("ELECTRTONIC LOAD", Font_7x10, White);
+  ssd1306_SetCursor(14, 20);
+  ssd1306_WriteString("Ver. V0.0", Font_11x18, White);
+  ssd1306_SetCursor(46, 38);
+  ssd1306_WriteString("Author", Font_6x8, White);
+  ssd1306_SetCursor(40, 46);
+  ssd1306_WriteString("PZERANSK", Font_6x8, White);
+  ssd1306_UpdateScreen();
+
+  //ssd1306_Fill(Black);
+  initStruct(&CCMenu, 1, "CC Mode", "Power:", "Set I:", "Set U:");
+  initStruct(&CVMenu, 1, "CV Mode", "Power:", "Set I:", "Set U:");
+  initStruct(&CPMenu, 1, "CP Mode", "Power:", "Set P:", "x");
+  initStruct(&CRMenu, 1, "CR Mode", "Power:", "Set R:", "x");
+  menuArray[0]=CCMenu;
+  menuArray[1]=CVMenu;
+  menuArray[2]=CPMenu;
+  menuArray[3]=CRMenu;
+  //displayMenu(&CCMenu);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,11 +139,25 @@ ssd1306_UpdateScreen();
 
   while (1)
   {
+/*
+	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)==0 && !wasToggled){
+		toggles++;
+		wasToggled = true;
+	}else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)==1){
+		wasToggled = false;
+	}*/
+
+	  modToggles = toggles%4;
+	displayMenu(&menuArray[modToggles]);
+
+
+	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+	//HAL_Delay(200);
+	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+	//HAL_Delay(200);
+
     /* USER CODE END WHILE */
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
-	  HAL_Delay(200);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
-	  HAL_Delay(200);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -166,7 +208,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == B1_Pin){
+		toggles++;
+	}
+}
 /* USER CODE END 4 */
 
 /**
