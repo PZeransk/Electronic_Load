@@ -50,7 +50,7 @@ void displayMenu(menu *currMenu){
 	ssd1306_Fill(Black);
 	ssd1306_SetCursor(0, 0);
 	ssd1306_WriteString(currMenu->line1, Font_11x18, White);
-	if(currMenu->status == 0){
+	if(currMenu->status == false){
 		ssd1306_SetCursor(95, 0);
 		ssd1306_WriteString("OFF", Font_11x18, White);
 	}else{

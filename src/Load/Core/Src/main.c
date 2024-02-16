@@ -39,6 +39,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define menuCount 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,11 +69,12 @@ menu CPMenu;
 menu CRMenu;
 
 
-menu menuArray[4]; // there are 4 menus
+menu menuArray[menuCount]; // there are 4 menus
 
 uint8_t toggles = 0;
 uint8_t modToggles = 0;
 bool wasToggled = false;
+bool startStop = false;
 /* USER CODE END 0 */
 
 /**
@@ -129,6 +131,7 @@ int main(void)
   menuArray[1]=CVMenu;
   menuArray[2]=CPMenu;
   menuArray[3]=CRMenu;
+
   //displayMenu(&CCMenu);
 
 
@@ -139,17 +142,10 @@ int main(void)
 
   while (1)
   {
-/*
-	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)==0 && !wasToggled){
-		toggles++;
-		wasToggled = true;
-	}else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)==1){
-		wasToggled = false;
-	}*/
 
-	  modToggles = toggles%4;
+	modToggles = toggles%menuCount;
+	menuArray[modToggles].status = startStop;
 	displayMenu(&menuArray[modToggles]);
-
 
 	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 	//HAL_Delay(200);
@@ -209,8 +205,12 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin == B1_Pin){
+	if(GPIO_Pin == B1_Pin && startStop == false){
 		toggles++;
+	}
+
+	if(GPIO_Pin == StopStart_Pin){
+		startStop = !startStop;
 	}
 }
 /* USER CODE END 4 */

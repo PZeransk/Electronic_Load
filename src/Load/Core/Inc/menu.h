@@ -15,12 +15,12 @@
 #include "ssd1306_conf_template.h"
 #include "ssd1306_fonts.h"
 #include "ssd1306_tests.h"
-
+#include "stdbool.h"
 
 typedef struct{
     uint32_t set_val1;
     uint32_t set_val2;
-    uint8_t status;
+    bool status;
     uint8_t id;
     char line1[20];
     char line2[20];
