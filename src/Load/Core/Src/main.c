@@ -39,7 +39,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define menuCount 4
+#define menuCount 3
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,6 +51,8 @@
 
 /* USER CODE BEGIN PV */
 I2C_HandleTypeDef hi2c1;
+uint8_t pulses = 0;
+uint8_t positions = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,14 +69,19 @@ menu CCMenu;
 menu CVMenu;
 menu CPMenu;
 menu CRMenu;
+menu BatMenu;
 
 
 menu menuArray[menuCount]; // there are 4 menus
 
 uint8_t toggles = 0;
 uint8_t modToggles = 0;
+uint8_t encToggles = 0;
+uint8_t setPosition = 0;
+
 bool wasToggled = false;
 bool startStop = false;
+bool setMode = false;
 /* USER CODE END 0 */
 
 /**
@@ -110,7 +117,11 @@ int main(void)
   MX_SPI2_Init();
   MX_DMA_Init();
   MX_TIM1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+
   ssd1306_Init();
   ssd1306_SetCursor(8, 10);
   ssd1306_WriteString("ELECTRTONIC LOAD", Font_7x10, White);
@@ -123,15 +134,17 @@ int main(void)
   ssd1306_UpdateScreen();
 
   //ssd1306_Fill(Black);
-  initStruct(&CCMenu, 1, "CC Mode", "Power:", "Set I:", "Set U:");
-  initStruct(&CVMenu, 1, "CV Mode", "Power:", "Set I:", "Set U:");
-  initStruct(&CPMenu, 1, "CP Mode", "Power:", "Set P:", "x");
-  initStruct(&CRMenu, 1, "CR Mode", "Power:", "Set R:", "x");
+  initStruct(&CCMenu, "CC Mode", "Set I:", "U in:", "Power:");
+  initStruct(&CVMenu, "CV Mode", "Set U:", "Power:", "I in:");
+  initStruct(&CPMenu, "CP Mode", "Set P:", "Power:", "x");
+  initStruct(&CRMenu, "CR Mode", "Set R:", "Power:", "x");
+  initStruct(&BatMenu, "BAT Test", "Set I:", "Set U", "Capacity");
   menuArray[0]=CCMenu;
-  menuArray[1]=CVMenu;
-  menuArray[2]=CPMenu;
-  menuArray[3]=CRMenu;
-
+  menuArray[1]=CPMenu;
+  menuArray[2]=BatMenu;
+  //menuArray[2]=CVMenu;
+  //menuArray[3]=CRMenu;
+  HAL_Delay(2000);
   //displayMenu(&CCMenu);
 
 
@@ -142,10 +155,20 @@ int main(void)
 
   while (1)
   {
+    ssd1306_Fill(Black);
 
 	modToggles = toggles%menuCount;
 	menuArray[modToggles].status = startStop;
+	pulses = TIM3->CNT;
+	positions = pulses/2;
+	if(setMode){
+	setPosition = encToggles%(sizeof(menuArray[modToggles].val_line1)/sizeof(uint8_t));
+	ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
+	menuArray[modToggles].val_line1[setPosition] = positions%9+'0';
+	}
+
 	displayMenu(&menuArray[modToggles]);
+
 
 	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 	//HAL_Delay(200);
@@ -205,12 +228,20 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin == B1_Pin && startStop == false){
+	if(GPIO_Pin == B1_Pin && !(startStop || setMode)){
 		toggles++;
 	}
 
 	if(GPIO_Pin == StopStart_Pin){
 		startStop = !startStop;
+	}
+
+	if(GPIO_Pin == SET_Mode_Pin){
+		setMode = !setMode;
+	}
+
+	if(GPIO_Pin == EncoderSwitch_Pin && setMode){
+		encToggles++;
 	}
 }
 /* USER CODE END 4 */

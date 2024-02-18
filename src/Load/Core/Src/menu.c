@@ -25,15 +25,17 @@ void zeroArray(uint8_t InArr[]){
 
 }
 
-void initStruct(menu *toInit, uint8_t id, char line1[], char line2[], char line3[], char line4[]){
+void initStruct(menu *toInit, char line1[], char line2[], char line3[], char line4[]){
+	char zero_temp[5] = "00000";
     toInit->set_val1=0;
     toInit->set_val2=0;
-    toInit->id=id;
     toInit->status = 0;
     strcpy(toInit->line1, line1);
     strcpy(toInit->line2, line2);
     strcpy(toInit->line3, line3);
     strcpy(toInit->line4, line4);
+    strcpy(toInit->val_line1, zero_temp);
+    strcpy(toInit->val_line2, zero_temp);
 }
 
 void setCurrentMenu(menu *CurrMenu, menu *MenuToSet){
@@ -47,7 +49,7 @@ void setCurrentMenu(menu *CurrMenu, menu *MenuToSet){
 }
 
 void displayMenu(menu *currMenu){
-	ssd1306_Fill(Black);
+
 	ssd1306_SetCursor(0, 0);
 	ssd1306_WriteString(currMenu->line1, Font_11x18, White);
 	if(currMenu->status == false){
@@ -59,6 +61,8 @@ void displayMenu(menu *currMenu){
 	}
 	ssd1306_SetCursor(0, 18);
 	ssd1306_WriteString(currMenu->line2, Font_7x10, White);
+	ssd1306_SetCursor(42, 18);
+	ssd1306_WriteString(currMenu->val_line1, Font_7x10, White);
 	ssd1306_SetCursor(0, 28);
 	ssd1306_WriteString(currMenu->line3, Font_7x10, White);
 	ssd1306_SetCursor(0, 38);
