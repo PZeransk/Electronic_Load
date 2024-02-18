@@ -79,6 +79,7 @@ uint8_t modToggles = 0;
 uint8_t encToggles = 0;
 uint8_t setPosition = 0;
 
+uint8_t arraySize=0;
 bool wasToggled = false;
 bool startStop = false;
 bool setMode = false;
@@ -162,10 +163,16 @@ int main(void)
 	pulses = TIM3->CNT;
 	positions = pulses/2;
 	if(setMode){
-	setPosition = encToggles%(sizeof(menuArray[modToggles].val_line1)/sizeof(uint8_t));
+    arraySize = sizeof(menuArray[modToggles].val_line1)/sizeof(*menuArray[modToggles].val_line1);
+	setPosition = encToggles%(arraySize);
 	ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
-	menuArray[modToggles].val_line1[setPosition] = positions%9+'0';
+	menuArray[modToggles].val_line1[setPosition] = positions%10+'0';
 	}
+
+	if(strcmp(menuArray[modToggles].menuName, CCMenu.menuName) == 0 && ChangeArrayToInt(menuArray[modToggles].val_line1, arraySize)>10000){
+		strcpy(menuArray[modToggles].val_line1,"10000");
+	}
+
 
 	displayMenu(&menuArray[modToggles]);
 
@@ -242,6 +249,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin == EncoderSwitch_Pin && setMode){
 		encToggles++;
+		TIM3->CNT = 0;
 	}
 }
 /* USER CODE END 4 */
