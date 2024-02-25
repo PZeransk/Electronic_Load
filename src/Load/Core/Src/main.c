@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "dma.h"
 #include "i2c.h"
 #include "spi.h"
@@ -29,7 +30,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "menu.h"
-#include "stdbool.h"
+#include "functions.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,6 +79,7 @@ uint8_t toggles = 0;
 uint8_t modToggles = 0;
 uint8_t encToggles = 0;
 uint8_t setPosition = 0;
+uint8_t changeSetToggles = 0;
 
 uint8_t arraySize=0;
 bool wasToggled = false;
@@ -119,6 +121,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM1_Init();
   MX_TIM3_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
@@ -145,6 +148,8 @@ int main(void)
   menuArray[2]=BatMenu;
   //menuArray[2]=CVMenu;
   //menuArray[3]=CRMenu;
+  strcpy(menuArray[0].val_line1,"01000");
+  strcpy( menuArray[1].val_line1,"010");
   HAL_Delay(2000);
   //displayMenu(&CCMenu);
 
@@ -158,19 +163,27 @@ int main(void)
   {
     ssd1306_Fill(Black);
 
+    checkLongPress(GPIOC, SET_Mode_Pin, &setMode, &changeSetToggles);
+
 	modToggles = toggles%menuCount;
 	menuArray[modToggles].status = startStop;
 	pulses = TIM3->CNT;
 	positions = pulses/2;
 	if(setMode){
+		if(strncmp(menuArray[modToggles].val_line2,"Set x:",4)==0){
+
+		}
     arraySize = sizeof(menuArray[modToggles].val_line1)/sizeof(*menuArray[modToggles].val_line1);
 	setPosition = encToggles%(arraySize);
 	ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
 	menuArray[modToggles].val_line1[setPosition] = positions%10+'0';
+
 	}
 
 	if(strcmp(menuArray[modToggles].menuName, CCMenu.menuName) == 0 && ChangeArrayToInt(menuArray[modToggles].val_line1, arraySize)>10000){
 		strcpy(menuArray[modToggles].val_line1,"10000");
+	}else if(strcmp(menuArray[modToggles].menuName, CPMenu.menuName) == 0 && ChangeArrayToInt(menuArray[modToggles].val_line1, arraySize)>200){
+		strcpy(menuArray[modToggles].val_line1,"200");
 	}
 
 
@@ -243,9 +256,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		startStop = !startStop;
 	}
 
-	if(GPIO_Pin == SET_Mode_Pin){
-		setMode = !setMode;
-	}
+	//if(GPIO_Pin == SET_Mode_Pin){
+	//	setMode = !setMode;
+	//}
 
 	if(GPIO_Pin == EncoderSwitch_Pin && setMode){
 		encToggles++;

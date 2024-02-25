@@ -50,7 +50,7 @@ void setCurrentMenu(menu *CurrMenu, menu *MenuToSet){
 }
 
 void displayMenu(menu *currMenu){
-
+	uint8_t size = sizeof(currMenu->val_line1)/sizeof(currMenu->val_line1[0]);
 	ssd1306_SetCursor(0, 0);
 	ssd1306_WriteString(currMenu->menuName, Font_11x18, White);
 	if(currMenu->status == false){
@@ -64,6 +64,7 @@ void displayMenu(menu *currMenu){
 	ssd1306_WriteString(currMenu->setValName, Font_7x10, White);
 	ssd1306_SetCursor(42, 18);
 	ssd1306_WriteString(currMenu->val_line1, Font_7x10, White);
+	ssd1306_SetCursor(size*7+42, 18);
 	ssd1306_SetCursor(0, 28);
 	ssd1306_WriteString(currMenu->measVal1, Font_7x10, White);
 	ssd1306_SetCursor(0, 38);

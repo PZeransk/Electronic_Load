@@ -66,7 +66,6 @@ void Error_Handler(void);
 #define StopStart_EXTI_IRQn EXTI0_IRQn
 #define SET_Mode_Pin GPIO_PIN_1
 #define SET_Mode_GPIO_Port GPIOC
-#define SET_Mode_EXTI_IRQn EXTI1_IRQn
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
