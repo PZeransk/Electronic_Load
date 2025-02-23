@@ -31,6 +31,7 @@
 /* USER CODE BEGIN Includes */
 #include "menu.h"
 #include "functions.h"
+#include "DAC70501.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,6 +86,8 @@ uint8_t arraySize=0;
 bool wasToggled = false;
 bool startStop = false;
 bool setMode = false;
+
+
 /* USER CODE END 0 */
 
 /**
@@ -122,6 +125,8 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM3_Init();
   MX_ADC1_Init();
+  MX_I2C3_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
@@ -154,6 +159,7 @@ int main(void)
   //displayMenu(&CCMenu);
 
 
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -170,13 +176,30 @@ int main(void)
 	pulses = TIM3->CNT;
 	positions = pulses/2;
 	if(setMode){
-		if(strncmp(menuArray[modToggles].val_line2,"Set x:",4)==0){
+		if(strncmp(menuArray[modToggles].measVal1,"Set x:",4)==0){
 
+			if(changeSetToggles%2==0){
+
+				arraySize = sizeof(menuArray[modToggles].val_line1)/sizeof(*menuArray[modToggles].val_line1);
+				setPosition = encToggles%(arraySize);
+				ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
+				menuArray[modToggles].val_line1[setPosition] = positions%10+'0';
+
+			}else if(changeSetToggles%2==1){
+
+			    arraySize = sizeof(menuArray[modToggles].val_line2)/sizeof(*menuArray[modToggles].val_line2);
+				setPosition = encToggles%(arraySize);
+				ssd1306_Line(42+7*setPosition, 38, 42+7*setPosition+7, 38, White);
+				menuArray[modToggles].val_line2[setPosition] = positions%10+'0';
+
+			}
+		}else{
+		    arraySize = sizeof(menuArray[modToggles].val_line1)/sizeof(*menuArray[modToggles].val_line1);
+			setPosition = encToggles%(arraySize);
+			ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
+			menuArray[modToggles].val_line1[setPosition] = positions%10+'0';
 		}
-    arraySize = sizeof(menuArray[modToggles].val_line1)/sizeof(*menuArray[modToggles].val_line1);
-	setPosition = encToggles%(arraySize);
-	ssd1306_Line(42+7*setPosition, 28, 42+7*setPosition+7, 28, White);
-	menuArray[modToggles].val_line1[setPosition] = positions%10+'0';
+
 
 	}
 
